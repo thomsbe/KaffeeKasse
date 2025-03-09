@@ -1,0 +1,49 @@
+[project]
+name = "kaffeekasse"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "django>=5.1.7",
+    "django-tailwind[reload]>=3.8.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.9.10",
+]
+
+# Ruff Konfiguration für unser Django-Projekt
+[tool.ruff]
+# Zeilen-Länge auf 100 Zeichen setzen (Django-Standard)
+line-length = 100
+
+# Python Target Version
+target-version = "py312"
+
+# Aktiviere alle Regeln von pycodestyle (E), pyflakes (F), 
+# sowie einige weitere nützliche Regel-Sets
+select = [
+    "E",    # pycodestyle
+    "F",    # pyflakes
+    "B",    # flake8-bugbear
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "DJ",   # flake8-django
+]
+
+# Ignoriere einige Django-spezifische Warnungen
+ignore = [
+    "DJ001",  # Null=True sollte bei CharField/TextField vermieden werden
+    "DJ012",  # Django Model sollte eine __str__ Methode haben (fügen wir später hinzu)
+]
+
+# Sortierung der Imports
+[tool.ruff.isort]
+known-first-party = ["main", "kaffee"]
+section-order = ["future", "standard-library", "django", "third-party", "first-party", "local-folder"]
+
+[tool.ruff.isort.sections]
+django = ["django"]
