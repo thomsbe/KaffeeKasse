@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import KaffeeKonfiguration, Einlage, Konsum, NutzerProfil
+
+from .models import AbrechnungsWoche, KaffeeKonfiguration, KontoBewegung, NutzerProfil
 
 # Register your models here.
 
@@ -7,21 +8,20 @@ from .models import KaffeeKonfiguration, Einlage, Konsum, NutzerProfil
 class KaffeeKonfigurationAdmin(admin.ModelAdmin):
     list_display = ("preis_pro_kg", "gramm_pro_tasse", "gueltig_ab", "ist_aktiv")
     list_filter = ("ist_aktiv",)
-    search_fields = ("preis_pro_kg", "gramm_pro_tasse")
+    search_fields = ("gueltig_ab",)
 
-@admin.register(Einlage)
-class EinlageAdmin(admin.ModelAdmin):
-    list_display = ("nutzer", "datum", "menge_gramm", "wert_euro", "kommentar")
-    list_filter = ("datum",)
-    search_fields = ("nutzer__username", "kommentar")
-
-@admin.register(Konsum)
-class KonsumAdmin(admin.ModelAdmin):
-    list_display = ("nutzer", "datum", "anzahl_tassen", "mahlvorgaenge", "kommentar")
-    list_filter = ("datum",)
-    search_fields = ("nutzer__username", "kommentar")
+@admin.register(KontoBewegung)
+class KontoBewegungAdmin(admin.ModelAdmin):
+    list_display = ("nutzer", "datum", "typ", "menge_gramm", "wert_euro", "beschreibung", "mahlvorgaenge")
+    list_filter = ("typ", "datum")
+    search_fields = ("nutzer__username", "beschreibung")
 
 @admin.register(NutzerProfil)
 class NutzerProfilAdmin(admin.ModelAdmin):
-    list_display = ("nutzer", "bevorzugte_mahlart", "durchschnitt_tassen_pro_woche")
-    search_fields = ("nutzer__username", "bevorzugte_mahlart")
+    list_display = ("nutzer", "tage_pro_woche", "kaffee_pro_tag", "mahlvorgaenge_pro_kaffee")
+    search_fields = ("nutzer__username",)
+
+@admin.register(AbrechnungsWoche)
+class AbrechnungsWocheAdmin(admin.ModelAdmin):
+    list_display = ("start_datum", "end_datum", "abgeschlossen")
+    list_filter = ("abgeschlossen",)

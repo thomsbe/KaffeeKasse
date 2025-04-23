@@ -1,0 +1,12 @@
+<form id="einlage-form" hx-post="{% url 'einlage' %}" hx-target="#einlage-form-wrapper" hx-swap="outerHTML" method="POST">
+    {% csrf_token %}
+    {% for field in form.visible_fields %}
+        <div class="form-control mb-4">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.help_text %}<small class="form-text text-muted">{{ field.help_text }}</small>{% endif %}
+            {% for error in field.errors %}<div class="text-error">{{ error }}</div>{% endfor %}
+        </div>
+    {% endfor %}
+    <button class="btn btn-primary w-full mt-2" type="submit">Einlage eintragen</button>
+</form>

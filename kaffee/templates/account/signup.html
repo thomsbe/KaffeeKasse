@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="flex justify-center items-center min-h-[60vh]">
+  <div class="card bg-base-100 shadow-xl w-full max-w-md">
+    <div class="card-body">
+      <h2 class="card-title mb-4">{% trans "Registrieren" %}</h2>
+      <form method="post" action="{% url 'account_signup' %}">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for field in form.visible_fields %}
+          <div class="form-control mb-4">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.help_text %}<small class="form-text text-muted">{{ field.help_text }}</small>{% endif %}
+            {% for error in field.errors %}<div class="text-error">{{ error }}</div>{% endfor %}
+          </div>
+        {% endfor %}
+        <button class="btn btn-primary w-full mt-2" type="submit">{% trans "Registrieren" %}</button>
+      </form>
+      <div class="mt-4 text-center">
+        <a href="{% url 'account_login' %}" class="link">{% trans "Schon ein Konto? Login!" %}</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

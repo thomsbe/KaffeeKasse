@@ -1,0 +1,18 @@
+<div class="modal modal-open">
+  <div class="modal-box">
+    <h3 class="font-bold text-lg mb-2">Konsum-Buchung markieren</h3>
+    <form hx-post="{% url 'markiere_bewegung' bewegung.id %}" hx-target="#markierung-{{ bewegung.id }}" hx-swap="outerHTML">
+      {% csrf_token %}
+      <div class="form-control mb-4">
+        <label class="label">
+          <span class="label-text">Grund/Bemerkung (z.B. Urlaub, Krankheit, ...)</span>
+        </label>
+        <input type="text" name="grund" class="input input-bordered w-full" maxlength="255" required>
+      </div>
+      <div class="modal-action">
+        <button type="submit" class="btn btn-primary">Markieren</button>
+        <button type="button" class="btn" onclick="document.getElementById('modal-markierung').innerHTML=''">Abbrechen</button>
+      </div>
+    </form>
+  </div>
+</div>

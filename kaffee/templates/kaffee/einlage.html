@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mx-auto mt-8">
+  <h2 class="text-3xl font-bold mb-6">Bohnen/Geld einbringen</h2>
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <div id="einlage-form-wrapper">
+        {% include "kaffee/partials/einlage_form.html" with form=form %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_htmx',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -50,7 +51,7 @@ INSTALLED_APPS = [
     'tailwind',
     'kaffee',
     'theme',
-    'django_browser_reload',  # Unsere Kaffee-Verwaltungs-App
+    'django_browser_reload',
 ]
 
 MIDDLEWARE = [
@@ -63,6 +64,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
     'django_browser_reload.middleware.BrowserReloadMiddleware',
+    'django_htmx.middleware.HtmxMiddleware',
 ]
 
 ROOT_URLCONF = 'main.urls'

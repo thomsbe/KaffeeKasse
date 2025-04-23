@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex justify-center items-center min-h-[60vh]">
+  <div class="card bg-base-100 shadow-xl w-full max-w-md">
+    <div class="card-body">
+      {% block entrance_content %}
+      {# Hier wird der eigentliche Formularinhalt eingefügt #}
+      {% endblock %}
+    </div>
+  </div>
+</div>
+{% endblock %}

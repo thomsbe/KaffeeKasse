@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mx-auto mt-8">
+  <h2 class="text-3xl font-bold mb-6">Kaffee trinken</h2>
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <form>
+        <div class="form-control mb-4">
+          <label class="label">
+            <span class="label-text">Anzahl Tassen</span>
+          </label>
+          <input type="number" class="input input-bordered" placeholder="z.B. 1" />
+        </div>
+        <div class="form-control mb-4">
+          <label class="label">
+            <span class="label-text">Mahlvorgänge</span>
+          </label>
+          <input type="number" class="input input-bordered" placeholder="z.B. 1" />
+        </div>
+        <button class="btn btn-primary" type="submit">Konsum speichern</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

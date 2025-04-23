@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mx-auto mt-8">
+  <h2 class="text-3xl font-bold mb-6">Mein Profil</h2>
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h3 class="card-title">Nutzer: {{ user.username }}</h3>
+      <p>E-Mail: {{ user.email }}</p>
+      <p>Bevorzugte Mahlart: --</p>
+      <p>Durchschnittlicher Kaffeekonsum: -- Tassen/Woche</p>
+      <div class="mt-4">
+        <a href="#" class="btn btn-primary">Profil bearbeiten</a>
+      </div>
+    </div>
+  </div>
+  <div class="max-w-2xl mx-auto mt-10">
+    <h2 class="text-2xl font-bold mb-4">Dein Kontoauszug</h2>
+    <div id="kontoauszug-list-wrapper"
+         hx-get="{% url 'kontoauszug' %}?page=1"
+         hx-trigger="load"
+         hx-target="#kontoauszug-list-wrapper"
+         hx-swap="innerHTML">
+      <!-- Kontoauszug-Liste wird hier initial geladen -->
+    </div>
+  </div>
+  <!-- Modal für Markierung -->
+  <div id="modal-markierung"></div>
+</div>
+{% endblock %}
