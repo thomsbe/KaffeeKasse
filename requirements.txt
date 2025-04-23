@@ -19,6 +19,7 @@ django-allauth==65.7.0
 django-browser-reload==1.18.0
 django-htmx==1.23.0
 django-tailwind==4.0.1
+gunicorn==23.0.0
 h11==0.14.0
 httpcore==1.0.8
 httpx==0.28.1
@@ -32,6 +33,7 @@ mocket==3.13.4
 more-itertools==10.7.0
 msgpack==1.1.0
 oauthlib==3.2.2
+packaging==25.0
 platformdirs==4.3.7
 puremagic==1.28
 pycparser==2.22 ; platform_python_implementation != 'PyPy'
