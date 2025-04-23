@@ -9,6 +9,8 @@ dependencies = [
     "django>=5.2",
     "django-tailwind[reload]>=3.8.0",
     "cookiecutter>=2.6.0",
+    "django-htmx>=1.23.0",
+    "whitenoise>=6.9.0",
 ]
 
 [dependency-groups]
