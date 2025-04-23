@@ -10,6 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import os
+
+# --- ENV-Variablen für Railway & Co. ---
+DEBUG = os.environ.get("DEBUG", "True") == "True"
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost").split(",")
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", 'django-insecure-r*xue)(+c3(_))5(mdbp(f09*8976bn#iocnu+$9hs%7jzfq!s')
+
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -18,14 +25,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-r*xue)(+c3(_))5(mdbp(f09*8976bn#iocnu+$9hs%7jzfq!s'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
 
 INTERNAL_IPS = [
     "127.0.0.1",
