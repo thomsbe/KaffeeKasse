@@ -1,0 +1,17 @@
+<!-- Cotton-Komponente für das Konsum-Formular (DaisyUI + HTMX-ready) -->
+<form id="konsum-form" method="POST">
+    {% csrf_token %}
+    <div class="form-control mb-4">
+        <label class="label">
+            <span class="label-text">Anzahl Tassen</span>
+        </label>
+        <input type="number" name="tassen" class="input input-bordered" placeholder="z.B. 1" required />
+    </div>
+    <div class="form-control mb-4">
+        <label class="label">
+            <span class="label-text">Mahlvorgänge</span>
+        </label>
+        <input type="number" name="mahlungen" class="input input-bordered" placeholder="z.B. 1" required />
+    </div>
+    <button class="btn btn-primary w-full mt-2" type="submit">Konsum speichern</button>
+</form>

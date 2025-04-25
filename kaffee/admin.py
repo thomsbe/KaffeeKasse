@@ -1,6 +1,15 @@
 from django.contrib import admin
 
-from .models import AbrechnungsWoche, KaffeeKonfiguration, KontoBewegung, NutzerProfil
+from .models import (
+    AbrechnungsWoche,
+    Auszahlung,
+    GeldEinzahlung,
+    KaffeeEinlage,
+    KaffeeKonfiguration,
+    NutzerProfil,
+    Transaktion,
+    Wochenverbrauch,
+)
 
 # Register your models here.
 
@@ -10,11 +19,31 @@ class KaffeeKonfigurationAdmin(admin.ModelAdmin):
     list_filter = ("ist_aktiv",)
     search_fields = ("gueltig_ab",)
 
-@admin.register(KontoBewegung)
-class KontoBewegungAdmin(admin.ModelAdmin):
-    list_display = ("nutzer", "datum", "typ", "menge_gramm", "wert_euro", "beschreibung", "mahlvorgaenge")
+@admin.register(Transaktion)
+class TransaktionAdmin(admin.ModelAdmin):
+    list_display = ("typ", "nutzer", "datum", "saldo_wert", "beschreibung")
     list_filter = ("typ", "datum")
     search_fields = ("nutzer__username", "beschreibung")
+
+@admin.register(KaffeeEinlage)
+class KaffeeEinlageAdmin(admin.ModelAdmin):
+    list_display = ("nutzer", "datum", "saldo_wert", "menge_kg")
+    search_fields = ("nutzer__username",)
+
+@admin.register(GeldEinzahlung)
+class GeldEinzahlungAdmin(admin.ModelAdmin):
+    list_display = ("nutzer", "datum", "saldo_wert", "zahlungsreferenz")
+    search_fields = ("nutzer__username",)
+
+@admin.register(Wochenverbrauch)
+class WochenverbrauchAdmin(admin.ModelAdmin):
+    list_display = ("nutzer", "datum", "saldo_wert", "start_datum", "end_datum")
+    search_fields = ("nutzer__username",)
+
+@admin.register(Auszahlung)
+class AuszahlungAdmin(admin.ModelAdmin):
+    list_display = ("nutzer", "datum", "saldo_wert", "bank_referenz")
+    search_fields = ("nutzer__username",)
 
 @admin.register(NutzerProfil)
 class NutzerProfilAdmin(admin.ModelAdmin):

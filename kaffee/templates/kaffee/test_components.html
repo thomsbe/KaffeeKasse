@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load cotton %}
+
+{% block content %}
+<div class="container mx-auto mt-8">
+  <h1 class="text-3xl font-bold mb-6">Cotton-Komponenten Testseite</h1>
+
+  <div class="mb-8">
+    <h2 class="text-xl font-semibold mb-2">Kontoauszug-Liste (Cotton-Komponente)</h2>
+    <c-kontoauszug-liste page_obj=page_obj has_next=has_next next_page=next_page />
+  </div>
+
+  <div class="mb-8">
+    <h2 class="text-xl font-semibold mb-2">Markiert-Badge</h2>
+    <c-markiert-badge grund="Testgrund" />
+  </div>
+
+  <div class="mb-8">
+    <h2 class="text-xl font-semibold mb-2">Markierung-Button</h2>
+    <c-markierung-button url="#" />
+  </div>
+
+  <div class="mb-8">
+    <h2 class="text-xl font-semibold mb-2">Einlage-Erfolg-Komponente</h2>
+    <c-einlage-success einlage=einlage form=form />
+  </div>
+
+  <div class="mb-8">
+    <h2 class="text-xl font-semibold mb-2">Button-Komponente</h2>
+    <c-button variant="primary">Primary</c-button>
+    <c-button variant="secondary">Secondary</c-button>
+    <c-button variant="success">Success</c-button>
+    <c-button variant="error">Error</c-button>
+  </div>
+
+  <div class="mb-8">
+    <h2 class="text-xl font-semibold mb-2">Badge-Komponente</h2>
+    <c-badge content="Markiert" />
+  </div>
+
+  <div class="mb-8">
+    <h2 class="text-xl font-semibold mb-2">Modal-Komponente</h2>
+    <c-modal open="true" content="Dies ist ein Beispiel-Modal." />
+  </div>
+
+  <div class="mb-8">
+    <h2 class="text-xl font-semibold mb-2">Pagination-Komponente</h2>
+    <c-pagination has_next="true" has_previous="true" page_number="2" next_url="#" previous_url="#" target="#test-pagination" />
+  </div>
+
+  <div class="mb-8">
+    <h2 class="text-xl font-semibold mb-2">Einlage-Form-Komponente</h2>
+    <c-einlage-form form=form />
+  </div>
+
+  <div class="mb-8">
+    <h2 class="text-xl font-semibold mb-2">Konsum-Form-Komponente</h2>
+    <c-konsum-form />
+  </div>
+</div>
+{% endblock %}

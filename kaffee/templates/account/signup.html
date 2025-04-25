@@ -8,7 +8,9 @@
       <h2 class="card-title mb-4">{% trans "Registrieren" %}</h2>
       <form method="post" action="{% url 'account_signup' %}">
         {% csrf_token %}
-        {{ form.non_field_errors }}
+        {% if form.non_field_errors %}
+          <div class="alert alert-error mb-4">{{ form.non_field_errors }}</div>
+        {% endif %}
         {% for field in form.visible_fields %}
           <div class="form-control mb-4">
             {{ field.label_tag }}
@@ -17,7 +19,7 @@
             {% for error in field.errors %}<div class="text-error">{{ error }}</div>{% endfor %}
           </div>
         {% endfor %}
-        <button class="btn btn-primary w-full mt-2" type="submit">{% trans "Registrieren" %}</button>
+        <c-button type="submit" variant="primary" extra_classes="w-full mt-2">{% trans "Registrieren" %}</c-button>
       </form>
       <div class="mt-4 text-center">
         <a href="{% url 'account_login' %}" class="link">{% trans "Schon ein Konto? Login!" %}</a>

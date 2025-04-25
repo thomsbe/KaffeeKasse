@@ -1,4 +1,5 @@
 from decimal import Decimal
+
 from django.contrib.auth import get_user_model
 from django.db import models
 
@@ -16,44 +17,52 @@ class KaffeeKonfiguration(models.Model):
         verbose_name = "Kaffee-Konfiguration"
         verbose_name_plural = "Kaffee-Konfigurationen"
 
-class KontoBewegung(models.Model):
+
+class Transaktion(models.Model):
+    TYP_KAFFEE     = "KAFFEE"
+    TYP_GELD       = "GELD"
+    TYP_WOCHE      = "WOCHENVERBRAUCH"
+    TYP_AUSZAHLUNG = "AUSZAHLUNG"
     TYP_CHOICES = [
-        ("KAFFEE", "Kaffeebohnen"),
-        ("GELD", "Geld"),
-        ("SONSTIGES", "Sonstiges/Zubehör"),
-        ("KONSUM", "Kaffeekonsum"),
+        (TYP_KAFFEE,    "Kaffeebohnen-Einlage"),
+        (TYP_GELD,      "Geld-Einzahlung"),
+        (TYP_WOCHE,     "Wochenverbrauch"),
+        (TYP_AUSZAHLUNG,"Auszahlung"),
     ]
-    nutzer = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name="kontobewegungen")
-    datum = models.DateField(auto_now_add=True)
-    typ = models.CharField(max_length=16, choices=TYP_CHOICES)
-    menge_gramm = models.PositiveIntegerField(null=True, blank=True, help_text="Nur für Kaffeebohnen/Konsum")
-    wert_euro = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True, help_text="Nur für Geld/Sonstiges")
-    beschreibung = models.CharField(max_length=200, blank=True, help_text="z.B. Milch, Entkalker, Zubehör, Kommentar")
-    mahlvorgaenge = models.PositiveIntegerField(null=True, blank=True, help_text="Nur für Konsum – wie oft gemahlen?")
-    saldo_wert = models.DecimalField(max_digits=7, decimal_places=2, default=Decimal('0.00'), help_text="Wert, mit dem diese Bewegung den Kontostand beeinflusst (positiv/negativ)")
-    ist_markiert = models.BooleanField(default=False, help_text="Vom Nutzer als unzutreffend markiert")
-    markierungsgrund = models.CharField(max_length=255, blank=True, help_text="Grund/Bemerkung für die Markierung")
 
-    def save(self, *args, **kwargs):
-        # Berechne saldo_wert je nach Typ
-        if self.typ == "GELD":
-            self.saldo_wert = self.wert_euro or Decimal('0.00')
-        elif self.typ == "KAFFEE":
-            # Optional: Umrechnung Kaffeebohnen zu Euro, falls wert_euro gesetzt, sonst 0
-            self.saldo_wert = self.wert_euro or Decimal('0.00')
-        elif self.typ == "KONSUM":
-            # Konsum ist immer negativ (z.B. -wert_euro)
-            self.saldo_wert = -(self.wert_euro or Decimal('0.00'))
-        elif self.typ == "SONSTIGES":
-            self.saldo_wert = self.wert_euro or Decimal('0.00')
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f"{self.get_typ_display()} durch {self.nutzer} am {self.datum}"
+    typ          = models.CharField(max_length=20, choices=TYP_CHOICES)
+    nutzer       = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    datum        = models.DateTimeField(auto_now_add=True)
+    saldo_wert   = models.DecimalField(
+                     max_digits=7,
+                     decimal_places=2,
+                     default=Decimal('0.00'),
+                     help_text='Wert der Transaktion (positiv/negativ)'
+                   )
+    beschreibung = models.CharField(max_length=200, blank=True)
 
     class Meta:
-        verbose_name = "Konto-Bewegung"
-        verbose_name_plural = "Konto-Bewegungen"
+        verbose_name = 'Transaktion'
+        verbose_name_plural = 'Transaktionen'
+
+
+class KaffeeEinlage(Transaktion):
+    menge_kg     = models.DecimalField(max_digits=6, decimal_places=2, help_text='Menge in kg')
+    zusatz_info  = models.TextField(blank=True, help_text="z.B. '5x 1kg vom Aldi'")
+
+
+class GeldEinzahlung(Transaktion):
+    zahlungsreferenz = models.CharField(max_length=100, blank=True, help_text='z.B. PayPal-Transaktions-ID')
+
+
+class Wochenverbrauch(Transaktion):
+    start_datum = models.DateField()
+    end_datum   = models.DateField()
+
+
+class Auszahlung(Transaktion):
+    bank_referenz = models.CharField(max_length=100, blank=True, help_text='z.B. IBAN oder Verwendungszweck')
+
 
 class NutzerProfil(models.Model):
     nutzer = models.OneToOneField(get_user_model(), on_delete=models.CASCADE, related_name="profil")
@@ -69,6 +78,7 @@ class NutzerProfil(models.Model):
     class Meta:
         verbose_name = "Nutzerprofil"
         verbose_name_plural = "Nutzerprofile"
+
 
 class AbrechnungsWoche(models.Model):
     start_datum = models.DateField(help_text="Startdatum der Woche (Montag)")

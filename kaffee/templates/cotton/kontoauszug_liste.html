@@ -1,0 +1,23 @@
+<!-- Cotton-Komponente für Kontoauszug-Liste (DaisyUI Table + Cotton-Komponenten) -->
+<table id="kontoauszug-list" class="table table-zebra table-bordered w-full rounded-lg overflow-hidden">
+  <thead>
+    <tr>
+      <th>Icon</th>
+      <th>Typ</th>
+      <th>Datum</th>
+      <th>Beschreibung</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% if page_obj %}
+      {% for bewegung in page_obj %}
+        <c-transaction-row bewegung=bewegung />
+      {% endfor %}
+    {% else %}
+      <tr><td colspan="4" class="py-3 text-center text-base-content/60">Keine Transaktionen vorhanden.</td></tr>
+    {% endif %}
+  </tbody>
+</table>
+{% if has_next %}
+  <c-pagination has_next="true" page_number="{{ next_page|add:'-1' }}" next_url="{% url 'kontoauszug' %}?page={{ next_page }}" target="#kontoauszug-list" />
+{% endif %}

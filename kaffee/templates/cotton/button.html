@@ -1,0 +1,20 @@
+<!-- Cotton-Komponente für DaisyUI Button. Unterstützt Block-Content oder label-Attribut. -->
+{% if content %}
+  {% if href %}
+    <a href="{{ href }}" class="btn btn-{{ variant|default:'primary' }}{% if size %} btn-{{ size }}{% endif %} {{ extra_classes }}">{{ content }}</a>
+  {% else %}
+    <button type="{{ type|default:'button' }}" class="btn btn-{{ variant|default:'primary' }}{% if size %} btn-{{ size }}{% endif %} {{ extra_classes }}">{{ content }}</button>
+  {% endif %}
+{% elif label %}
+  {% if href %}
+    <a href="{{ href }}" class="btn btn-{{ variant|default:'primary' }}{% if size %} btn-{{ size }}{% endif %} {{ extra_classes }}">{{ label }}</a>
+  {% else %}
+    <button type="{{ type|default:'button' }}" class="btn btn-{{ variant|default:'primary' }}{% if size %} btn-{{ size }}{% endif %} {{ extra_classes }}">{{ label }}</button>
+  {% endif %}
+{% else %}
+  {% if href %}
+    <a href="{{ href }}" class="btn btn-{{ variant|default:'primary' }}{% if size %} btn-{{ size }}{% endif %} {{ extra_classes }}"></a>
+  {% else %}
+    <button type="{{ type|default:'button' }}" class="btn btn-{{ variant|default:'primary' }}{% if size %} btn-{{ size }}{% endif %} {{ extra_classes }}"></button>
+  {% endif %}
+{% endif %}

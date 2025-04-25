@@ -1,41 +1,40 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="hero min-h-[60vh] bg-base-200">
+{% if user.is_authenticated %}
+<div class="container mx-auto mt-8">
+  <h1 class="text-5xl font-bold text-center mb-6">KaffeeKasse</h1>
+  <div class="text-5xl font-mono p-4 bg-base-200 rounded-lg text-center mb-4">
+    Kontostand: {{ kontostand|floatformat:2 }} €
+  </div>
+  {% if kontostand < 0 %}
+    <div class="alert alert-error mb-4">Achtung: Du bist im Minus!</div>
+  {% elif kontostand == 0 %}
+    <div class="alert alert-info mb-4">Dein Konto ist ausgeglichen.</div>
+  {% else %}
+    <div class="alert alert-success mb-4">Alles im grünen Bereich!</div>
+  {% endif %}
+  <div class="flex justify-end mb-6">
+    <c-button hx-get="{% url 'einlage' %}" hx-target="#modal-transaktion" hx-swap="innerHTML" variant="primary">
+      Neue Transaktion
+    </c-button>
+  </div>
+  <c-transaction-table id="transaktion-list-wrapper" hx-get="{% url 'kontoauszug' %}?page=1" hx-trigger="load" hx-target="#transaktion-list-wrapper" hx-swap="innerHTML">
+    <!-- Transaktionen werden hier geladen -->
+  </c-transaction-table>
+  <c-modal id="modal-transaktion"></c-modal>
+</div>
+{% else %}
+<c-hero class="min-h-[60vh] bg-base-200">
   <div class="hero-content flex-col lg:flex-row-reverse">
     <div class="text-center lg:text-left">
       <h1 class="text-5xl font-bold">KaffeeKasse</h1>
-      <p class="py-6">Willkommen bei der KaffeeKasse – deine digitale Gemeinschaftskasse für Kaffeegenuss und Fairness!</p>
-      {% if user.is_authenticated %}
-        <div class="flex flex-col items-center justify-center mt-8">
-          <h2 class="text-2xl font-bold mb-2">Dein aktueller Kontostand</h2>
-          <div class="text-5xl font-mono mb-4 p-4 rounded-lg shadow-lg bg-base-200">
-            {{ kontostand|floatformat:2 }} €
-          </div>
-          {% if kontostand < 0 %}
-            <div class="text-red-600 font-semibold">Achtung: Du bist im Minus!</div>
-          {% elif kontostand == 0 %}
-            <div class="text-neutral-500">Dein Konto ist ausgeglichen.</div>
-          {% else %}
-            <div class="text-green-700">Alles im grünen Bereich!</div>
-          {% endif %}
-        </div>
-        <div class="card bg-base-100 shadow-xl mb-4">
-          <div class="card-body">
-            <h2 class="card-title">Hallo, {{ user.username }}!</h2>
-            <div class="flex gap-2 mt-4">
-              <a href="#" class="btn btn-primary">Kaffee trinken</a>
-              <a href="{% url 'einlage' %}" class="btn btn-secondary">Bohnen einbringen</a>
-              <a href="{% url 'profil' %}" class="btn btn-outline">Profil & Kontoauszug</a>
-            </div>
-          </div>
-        </div>
-      {% else %}
-        <div class="flex gap-4 mt-8 justify-center">
-          <a href="{% url 'account_login' %}" class="btn btn-primary btn-lg">Login</a>
-          <a href="{% url 'account_signup' %}" class="btn btn-secondary btn-lg">Registrieren</a>
-        </div>
-      {% endif %}
+      <p class="py-6">Willkommen in Zimmer 2.06 – der KaffeeKasse, unserem solidarischen Projekt. Wer sich einkauft, kann so viel Kaffee trinken, wie er mag. Registriere dich oder logge dich ein, um loszulegen!</p>
+      <div class="flex gap-4 mt-8 justify-center">
+        <c-button href="{% url 'account_login' %}" variant="primary" size="lg">Login</c-button>
+        <c-button href="{% url 'account_signup' %}" variant="secondary" size="lg">Registrieren</c-button>
+      </div>
     </div>
   </div>
-</div>
+</c-hero>
+{% endif %}
 {% endblock %}

@@ -13,4 +13,5 @@ urlpatterns = [
     path('kontoauszug/markiere/<int:bewegung_id>/', views.markiere_bewegung, name='markiere_bewegung'),
     path('kontoauszug/markiere_modal/<int:bewegung_id>/', views.markiere_bewegung_modal, name='markiere_bewegung_modal'),
     path('kontoauszug/entmarkiere/<int:bewegung_id>/', views.entmarkiere_bewegung, name='entmarkiere_bewegung'),
+    path('test/', views.test_components, name='test_components'),
 ]

@@ -16,8 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic.base import RedirectView
 
 urlpatterns = [
+    # Redirect für leere Allauth-Profile-URL
+    path('accounts/profile/', RedirectView.as_view(pattern_name='index', permanent=False)),
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
     path('__reload__/', include('django_browser_reload.urls')),

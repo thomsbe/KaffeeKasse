@@ -1,0 +1,12 @@
+<tr>
+  <td>
+    {% if bewegung.typ == 'GELD' %}💶
+    {% elif bewegung.typ == 'KAFFEE' %}🫘
+    {% elif bewegung.typ == 'WOCHENVERBRAUCH' %}📅
+    {% elif bewegung.typ == 'AUSZAHLUNG' %}💸
+    {% endif %}
+  </td>
+  <td>{{ bewegung.get_typ_display }}</td>
+  <td>{{ bewegung.datum|date:'Y-m-d H:i' }}</td>
+  <td>{{ bewegung.beschreibung|default:"-" }}</td>
+</tr>

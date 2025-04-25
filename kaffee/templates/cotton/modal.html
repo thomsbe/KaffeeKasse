@@ -1,0 +1,17 @@
+<!-- Cotton-Komponente für ein DaisyUI Modal -->
+<div x-data="{ open: {{ open|default:'false' }} }" x-show="open" class="modal" tabindex="-1" role="dialog" x-cloak>
+  <div class="modal-box">
+    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" @click="open = false">✕</button>
+    <div class="py-4">
+      {{ content|safe }}
+    </div>
+    {% if actions %}
+      <div class="modal-action flex gap-2 mt-4">
+        {% for action in actions %}
+          {{ action|safe }}
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+  <div class="modal-backdrop" @click="open = false"></div>
+</div>

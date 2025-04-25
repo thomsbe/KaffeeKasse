@@ -1,56 +1,71 @@
 # Projektplan: KaffeeKasse
 
-## Stand: 23.04.2025
+## Stand: 25.04.2025
 
 ---
 
-## 1. Was wurde bisher umgesetzt?
+## 1. Aktueller Stand
 
-- **Projektidee und technische Rahmenbedingungen** sind dokumentiert in [idee.md] und [technical.md].
-- **Django-Projekt aufgesetzt** mit folgenden Features:
-  - User-Management mit Django-Allauth
-  - Tailwind CSS v4 Integration für modernes CSS
-  - DaisyUI als UI-Komponenten-Bibliothek
-  - Responsive Layout und Navigation mit DaisyUI
-  - Konsum-, Einlage- und Nutzerprofil-Modelle inkl. Admin-Interface
-  - Automatischer Browser-Reload im Dev-Modus
-- **Wichtige Stolperfallen dokumentiert** (z.B. Tailwind v4: Quellenangabe via @source in CSS, DaisyUI-Integration, Verhalten nach Neuinstallation)
-- **Allauth-Templates für Login und Registrierung** wurden kopiert und mit DaisyUI-Komponenten gestaltet (weitere Anpassungen möglich)
-- **Zentrales Auth-Layout (entrance.html)** im DaisyUI-Stil angelegt (funktioniert ggf. noch nicht wie gewünscht, siehe ToDos)
-
----
-
-## 2. Was muss noch getan werden? (ToDos)
-
-- **Allauth-Templates weiter anpassen:**
-  - Prüfen, warum das DaisyUI-Layout bei allen Auth-Seiten noch nicht überall greift
-  - Weitere Templates (Passwort-Reset, E-Mail-Bestätigung etc.) anpassen
-- **Testing & Validierung:**
-  - Unit- und Integrationstests für alle Kernfunktionen
-  - Testfälle für Authentifizierung und Konsum-Logik
-- **Fehlerbehandlung & Logging:**
-  - Logging für wichtige Aktionen und Fehler
-  - Fehlermeldungen für Nutzer verbessern
-- **Design & Usability:**
-  - UI-Feinschliff: Buttons, Farben, Responsiveness
-  - Barrierefreiheit prüfen
-- **Dokumentation:**
-  - README aktualisieren (Beispiele, Nutzung, Entwicklerhinweise)
-  - Changelog pflegen
-- **Deployment-Vorbereitung:**
-  - Einstellungen für Produktion (SECRET_KEY, Debug, Allowed Hosts)
-  - Collectstatic, Datenbankmigrationen
-  - Evtl. Dockerfile oder Deployment-Skripte
+- **Öffentliche Startseite** (`/`):
+  - Unangemeldete sehen Hero mit Projektbeschreibung und Login/Signup-Buttons.
+  - Authentifizierte sehen Kontostand, Farbhinweis (Minus/Null/Plus), Button „Neue Transaktion“ und das HTMX-geladene Transaktionen-Listing.
+- **Transaktionsmodell** `Transaktion` mit Unterklassen (`KaffeeEinlage`, `GeldEinzahlung`, `Wochenverbrauch`, `Auszahlung`) per Multi-Table Inheritance vollständig implementiert.
+- **HTMX-Integration**:
+  - Partial-Templates für Formular (`einlage_form.html`), Erfolgsmeldung (`einlage_success.html`) und Listing (`kontoauszug_liste.html`).
+  - Paginierung mit HTMX-Infinite-Loading.
+- **Allauth-Anpassungen**:
+  - Login-Template im DaisyUI-Stil überschrieben.
+  - Hidden-`next`-Input und `LOGIN_REDIRECT_URL = '/'` konfiguriert.
+  - Redirect für `/accounts/profile/` auf Index hinzugefügt.
+- **Technisches Setup**:
+  - Django 5.1.7, Tailwind CSS v4, DaisyUI 5, django_htmx, django_browser_reload.
+- **Refactoring & UI-Komponenten**:
+  - Umstellung auf Cotton-Komponenten für alle zentralen UI-Elemente (Buttons, Formulare, Modals, Badges, Listen, Pagination)
+  - DaisyUI v5 als Standard für Styles
+  - HTMX für dynamische Formulare und UI
+  - Alpine.js für Modal-Steuerung
+  - Account-Templates (Login, Signup) auf Cotton/DaisyUI refaktorisiert
+  - Alte Partials/Komponenten entfernt (siehe Liste unten)
+  - Fehlerbehebungen: Button-Komponente robust, Modal steuerbar
+  - Neue Cotton-Komponente: hero
 
 ---
 
-## 3. Offene Fragen / Wünsche
+## 2. Nächste Schritte
 
-- Sollen weitere Features (z.B. Statistiken, Push-Benachrichtigungen) integriert werden?
-- Gibt es Wünsche für spezielle Rollen/Rechte oder Integrationen (z.B. Slack, E-Mail)?
-- Welche Auth-Provider (Google, GitHub etc.) sollen evtl. ergänzt werden?
+- **Weitere Allauth-Templates** anpassen (Passwort-Reset, E-Mail-Bestätigung).
+- **Profil-Seite** (`/profil/`): Nutzerdetails, Kontoauszug-Link, evtl. Einstellungen.
+- **Testing**:
+  - Unit-Tests für Views, Formulare und Modelle.
+  - Integrationstests für HTMX-Flows.
+- **Error Handling & Logging**:
+  - Logging von Transaktionen und Fehlern.
+  - Nutzerfreundliche Fehlermeldungen.
+- **UI/UX & Accessibility** prüfen und optimieren.
+- **Deployment**:
+  - Prod-Settings (Debug=False, Env-Variablen), collectstatic, Migrationen.
+- **Best Practice:** Jede Cotton-Komponente erhält eine eigene Test-Ansicht (z.B. /test) mit Beispieldaten. Das erleichtert Entwicklung, Review und spätere Wartung.
+- **Weitere Templates auf Cotton/DaisyUI umstellen** (z.B. Passwort-Reset)
+- **Mehr DaisyUI-Komponenten als Cotton-Wrapper**
+- **Tests und Dokumentation aktualisieren**
+- **Clean-Up:** Nicht mehr genutzte Templates entfernen
 
 ---
 
+## 3. Offene Fragen
+
+- Zusätzliche Transaktionstypen oder Limits?
+- Weitere Social-Login-Anbieter erwünscht?
+- Erweiterte Statistiken und Exportfunktionen?
+
+---
+
+## 4. Gelöschte/veraltete Dateien
+
+- kaffee/templates/kaffee/partials/einlage_form.html
+- kaffee/templates/kaffee/partials/kontoauszug_liste.html
+- kaffee/templates/kaffee/components/transaction_table.html
+- kaffee/templates/kaffee/components/transaction_row.html
+
+---
 **Bitte diese Datei regelmäßig ergänzen und als Fahrplan für die Entwicklung nutzen!**
-

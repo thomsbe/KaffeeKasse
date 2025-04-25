@@ -15,6 +15,7 @@ import os
 # --- ENV-Variablen für Railway & Co. ---
 DEBUG = os.environ.get("DEBUG", "True") == "True"
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost").split(",")
+ALLOWED_HOSTS.append("127.0.0.1")
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", 'django-insecure-r*xue)(+c3(_))5(mdbp(f09*8976bn#iocnu+$9hs%7jzfq!s')
 
 from pathlib import Path
@@ -48,6 +49,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.github',
     'allauth.socialaccount.providers.microsoft',
     'tailwind',
+    'django_cotton',
     'kaffee',
     'theme',
     'django_browser_reload',
@@ -73,6 +75,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
+            BASE_DIR / 'kaffee' / 'templates',  # Pfad für custom Allauth-Templates (z.B. account/login.html)
             BASE_DIR / 'theme' / 'templates',  # Füge den Pfad zum theme/templates hinzu
         ],
         'APP_DIRS': True,
@@ -148,6 +151,9 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGIN_REDIRECT_URL = '/'  # Weiterleitung nach Login
+ACCOUNT_LOGIN_REDIRECT_URL = '/'  # Allauth-spezifisches Login-Redirect
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {

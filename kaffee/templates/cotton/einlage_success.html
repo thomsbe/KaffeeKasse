@@ -1,6 +1,7 @@
+<!-- Cotton-Komponente für Einlage-Erfolgsmeldung (DaisyUI) -->
 <div class="alert alert-success mb-4">
     ✅ Einlage erfolgreich eingetragen: <strong>{{ einlage.menge_gramm }}g</strong> für <strong>{{ einlage.wert_euro }}€</strong>{% if einlage.kommentar %} ({{ einlage.kommentar }}){% endif %}
 </div>
 <div id="einlage-form-wrapper">
-    {% include "kaffee/partials/einlage_form.html" with form=form %}
+    <c-einlage-form form=form />
 </div>

@@ -4,9 +4,11 @@
   <h2 class="text-3xl font-bold mb-6">Bohnen/Geld einbringen</h2>
   <div class="card bg-base-100 shadow-xl">
     <div class="card-body">
-      <div id="einlage-form-wrapper">
-        {% include "kaffee/partials/einlage_form.html" with form=form %}
-      </div>
+      {% if einlage_success %}
+        <c-einlage-success einlage=einlage form=form />
+      {% else %}
+        <c-einlage-form form=form />
+      {% endif %}
     </div>
   </div>
 </div>

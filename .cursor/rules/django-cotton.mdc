@@ -1,0 +1,345 @@
+# Django-Cotton Template Component Guidelines
+
+## Introduction
+
+Django-Cotton is a library that brings a modern component-based approach to Django’s template engine. It allows developers (and AI assistants) to build **reusable UI components** in Django templates, enhancing productivity and consistency in the front-end. Cotton components are defined as HTML-like template snippets and can be invoked with custom tags (prefixed with `c-`), making template code more **declarative and modular** ([django-cotton/README.md at main · wrabit/django-cotton · GitHub](https://github.com/wrabit/django-cotton/blob/main/README.md#:~:text=,reducing%20repetition%20and%20enhancing%20maintainability)). This approach complements Django’s existing Model-View-Template pattern without replacing it – you still use Django’s standard templating (not Jinja2) and follow normal conventions (URL routing, view context, etc.). Cotton integrates seamlessly with modern tools like **HTMX** (for dynamic server-driven UI) and **Alpine.js** (for client-side interactivity), enabling rich functionality with minimal custom JavaScript ([django-cotton/README.md at main · wrabit/django-cotton · GitHub](https://github.com/wrabit/django-cotton/blob/main/README.md#:~:text=,reducing%20repetition%20and%20enhancing%20maintainability)).
+
+In this guide, we outline best practices and rules for using Django-Cotton to build templates. These guidelines cover general principles, component syntax, using slots (for inserting content) and includes, integration tips for HTMX and Alpine.js, naming conventions, example structures, and important dos and don’ts. The goal is to help both developers and language models generate clean, idiomatic Django templates using Cotton components.
+
+## General Principles
+
+- **Component-Based UI:** Break down your UI into self-contained components. Each component should encapsulate a specific piece of the interface (e.g., a button, form, card, navbar) with its structure and styling, so it can be reused across pages. This encourages DRY (Don't Repeat Yourself) design and consistent look and feel.
+
+- **Separation of Concerns:** Continue to follow Django’s separation of concerns. Keep business logic in views and models, and use templates (and components) purely for presentation. Cotton components can include simple logic (conditions, loops) for UI rendering, but avoid heavy computations or database access in templates. Pass all necessary data to components via context (attributes or slots), rather than having components fetch data themselves.
+
+- **Template Inheritance and Composition:** You can use Django’s template inheritance (using `{% extends %}` and `{% block %}`) alongside Cotton components for overall page layout, or you can build layouts as components themselves. For example, you might have a base template for the general page structure, and within it use components for the header, footer, etc. Alternatively, you can define a top-level layout component that wraps a page’s content. Both approaches are valid – choose the one that leads to clearer and cleaner templates. The key is to maintain a clean structure, using **template inheritance for high-level structure** and **components for repeated or self-contained UI pieces**, without mixing responsibilities.
+
+- **Declarative and Readable Templates:** Cotton’s syntax is designed to be HTML-like and declarative. Make use of this by writing templates that clearly show the structure of the page. Use meaningful component names and attribute names, so that a template reads like a description of the UI. This makes it easier for others (or AI models) to understand and modify the code. Keep each component’s template straightforward: primarily HTML with placeholders for data, and minimal logic.
+
+- **Leverage Modern UI Tools:** Django-Cotton plays nicely with Tailwind CSS (or other CSS frameworks) and small JS libraries like Alpine.js. You can style components with utility classes (keeping styling in CSS, not in Python) and add interactivity with Alpine or partial page updates with HTMX. Embrace these tools to enhance UX, but use them judiciously – e.g., use Alpine.js for local UI state and HTMX for server interactions, ensuring the two are used in complementary ways. Always include necessary scripts (like Alpine’s or HTMX’s JS files) in your base page. Use these integrations to keep your templates mostly HTML and attributes, rather than writing large scripts.
+
+## Component Syntax
+
+Cotton introduces a new syntax for defining and using components in Django templates. A component is essentially a template snippet (typically stored as its own HTML file) that can be invoked with a custom tag. Here are the core elements of Cotton’s component syntax:
+
+- **File and Tag Naming:** Save component templates in the `templates/cotton/` directory (by default) or another configured components directory. Use **snake_case** for the filename (e.g. `my_component.html`). To use that component in a page, use a **custom tag** with the prefix `c-` and a kebab-case name, e.g. `<c-my-component></c-my-component>` ([django-cotton/README.md at main · wrabit/django-cotton · GitHub](https://github.com/wrabit/django-cotton/blob/main/README.md#:~:text=,component)). The `c-` prefix is required for Cotton to recognize the tag as a component. Component tags can be self-closing (if they have no content) or wrap inner content (described as slots below).
+
+- **Component Structure:** Inside a component’s template file, write the HTML structure for that UI piece, using Django template syntax for dynamic content. Treat it like a mini-template. For example, a simple component in `templates/cotton/hello.html` might look like: 
+
+  ```html
+  <!-- File: cotton/hello.html -->
+  <div class="hello-box">
+    Hello, {{ slot }}!
+  </div>
+  ```
+
+  Here `{{ slot }}` is a special variable representing the inner content passed between the opening and closing component tags. If you use this component as `<c-hello>World</c-hello>`, the output will be `<div class="hello-box">Hello, World!</div>` – the text "World" is injected into the component’s template via the `slot` variable ([django-cotton/README.md at main · wrabit/django-cotton · GitHub](https://github.com/wrabit/django-cotton/blob/main/README.md#:~:text=component%20as%20%60,HTML%20or%20Django%20template%20expression)). The `slot` can contain any HTML or even other component tags when the component is used.
+
+- **Passing Attributes (Props):** You can pass data into a component via HTML-like attributes on the component tag. Each attribute becomes a **context variable** inside the component’s template. For instance, consider a component for a user avatar:
+
+  ```html
+  <!-- File: cotton/avatar.html -->
+  <img src="{{ url }}" alt="{{ alt_text|default:username }}">
+  ```
+  
+  If you use `<c-avatar url="/media/alice.jpg" alt_text="Alice's profile picture" username="Alice" />`, inside `avatar.html` the variables `url`, `alt_text`, and `username` will be available with those values ([django-cotton/README.md at main · wrabit/django-cotton · GitHub](https://github.com/wrabit/django-cotton/blob/main/README.md#:~:text=%3C%21,%7B%7B%20slot%20%7D%7D%20%3C%2Fa)). The rendered HTML would be: `<img src="/media/alice.jpg" alt="Alice's profile picture">`. Any attributes you pass that match variable names used in the component template will populate those. 
+
+  - **Dynamic (Computed) Attributes:** By default, values of attributes are treated as plain strings. If you need to pass a context variable or a Python expression (like a number, list, or boolean) into the component, prefix the attribute with a colon `:`. For example: `<c-user-card :user="user_obj" :show_details="True" />`. In this case, the `user` context variable (perhaps passed from the view) is passed into the component, and `show_details` is passed as a Python boolean `True` rather than the string `"True"` ([django-cotton/README.md at main · wrabit/django-cotton · GitHub](https://github.com/wrabit/django-cotton/blob/main/README.md#:~:text=To%20pass%20a%20template%20variable,Consider%20a%20bio%20card%20component)) ([django-cotton/README.md at main · wrabit/django-cotton · GitHub](https://github.com/wrabit/django-cotton/blob/main/README.md#:~:text=Boolean%20attributes)). Cotton will evaluate the expression after the `:` in the context of the parent template. Use `:` whenever you want to bind a Django variable or literal (like list, dict, boolean) to a component attribute.
+
+  - **Boolean Attributes:** If you include an attribute with no value (and no colon), it will be treated as a boolean flag set to `True` inside the component. For example, `<c-button primary>` means inside the component template, the variable `primary` will be `True` ([django-cotton/README.md at main · wrabit/django-cotton · GitHub](https://github.com/wrabit/django-cotton/blob/main/README.md#:~:text=Boolean%20attributes)). This is useful for modifiers or toggles (like a `disabled` state or a style flag). In the component, you can check `{% if primary %}` to adjust output (like add a CSS class).
+
+  - **Template Expressions in Attributes:** You can also combine static text with template expressions in an attribute value. Since unprefixed attributes are strings, you can use Django’s template syntax within them. For example: `<c-icon name="fa-{{ icon_name }} {{ size|default:'md' }}"/>` will result in the `name` variable being `"fa-home md"` if `icon_name` was `"home"` and `size` not provided (using default) ([django-cotton/README.md at main · wrabit/django-cotton · GitHub](https://github.com/wrabit/django-cotton/blob/main/README.md#:~:text=Template%20expressions%20inside%20attributes)). Cotton will capture the fully rendered string as the attribute’s value.
+
+- **Special `attrs` variable:** Cotton provides a special context variable `attrs` which contains **all extra attributes** passed to the component that are not explicitly used elsewhere. This allows your component to accept arbitrary HTML attributes (like `class`, `id`, `data-*` attributes, ARIA attributes, or even Alpine/HTMX attributes) without declaring each one. To use it, simply include `{{ attrs }}` within an HTML tag in your component template. A common pattern is to put `{{ attrs }}` in the main wrapper tag of the component. For example, in a component definition: 
+
+  ```html
+  <button type="button" class="btn" {{ attrs }}>
+    {{ slot }}
+  </button>
+  ```
+
+  If you call `<c-button class="btn-primary" id="saveBtn" data-loading>` (assuming `button.html` expects no specific attributes except perhaps the default slot text), then `attrs` will output `class="btn-primary" id="saveBtn" data-loading` in the button element. This way, your component automatically carries over any additional attributes you provide in usage ([django-cotton/README.md at main · wrabit/django-cotton · GitHub](https://github.com/wrabit/django-cotton/blob/main/README.md#:~:text=%3C%21,div)). **Best practice:** always include `{{ attrs }}` in your component’s main element to make it flexible, unless you have a specific reason to restrict attributes. If an attribute name matches a context variable or slot name used by the component, it won’t appear in `attrs` (it’s consumed by that variable). Conversely, any attribute not recognized as a parameter or slot will end up in `attrs` for inclusion.
+
+- **Internal Component Variables (`<c-vars>`):** In some cases, you want to define default values or internal variables within the component template itself. Django templates don’t allow creating new variables easily, so Cotton offers a `<c-vars>` tag for this purpose. By placing `<c-vars>` at the top of your component, you can set default values for certain variables or even define aliases. For example:
+
+  ```django
+  <!-- File: cotton/button.html -->
+  <c-vars icon="">{{ /* default icon slot content to empty */ }}</c-vars>
+  <button {{ attrs }}>
+    {% if icon %}<span class="icon">{{ icon }}</span>{% endif %}
+    {{ slot }}
+  </button>
+  ```
+
+  In this snippet, we define a default for `icon` as an empty string, so that if the component is used without an `icon` slot, the `{% if icon %}` check will safely evaluate to False (no icon shown). Variables declared in `<c-vars>` are considered **consumed** by the component, so they won’t be included in `attrs` even if passed in ([django-cotton/README.md at main · wrabit/django-cotton · GitHub](https://github.com/wrabit/django-cotton/blob/main/README.md#:~:text=%3C%21,required)) ([django-cotton/README.md at main · wrabit/django-cotton · GitHub](https://github.com/wrabit/django-cotton/blob/main/README.md#:~:text=In)). This is useful for any attribute/slot that your component handles internally (like `icon` here) to avoid outputting it as an unknown attribute. Use `<c-vars>` to set up defaults, combine or preprocess passed-in values, or prevent certain props from propagating to HTML. Remember that `<c-vars>` should be at the top of the component template and is not visible in the rendered HTML (it’s stripped out after defining the variables).
+
+## Using Slots and Includes
+
+Slots and includes allow injecting content into components and composing components together, making Cotton very powerful for building complex UIs.
+
+- **Default Slot vs. Named Slots:** The **default slot** refers to the content between a component’s opening and closing tags when no slot name is specified. For example, in `<c-alert>Warning!</c-alert>`, the text “Warning!” goes into the default `slot` variable in the component. A **named slot** is a way to pass content for a specific placeholder inside the component, identified by name. Named slots enable a component to accept multiple distinct content blocks. 
+
+  To use a named slot, inside the component usage you nest a `<c-slot name="slotname">...</c-slot>` tag. The content inside that will be captured and made available to the component under the context variable matching the name. For instance, imagine a `<c-modal>` component that can optionally receive a footer content. You might use it as: 
+
+  ```django
+  <c-modal title="Delete Item">
+    <p>Are you sure you want to delete this item?</p>
+    <c-slot name="footer">
+      <button type="button" class="btn cancel">Cancel</button>
+      <button type="submit" class="btn confirm">Confirm</button>
+    </c-slot>
+  </c-modal>
+  ```
+
+  Here, we pass a default slot (the `<p>` message) and also a named slot `footer` containing two buttons. In the `modal.html` component template, you would simply use the variable `footer` where the footer content should appear, for example:
+
+  ```django
+  <!-- File: cotton/modal.html -->
+  <div class="modal">
+    <h2>{{ title }}</h2>
+    <div class="modal-body">
+      {{ slot }}   {# default slot content #}
+    </div>
+    {% if footer %}
+      <div class="modal-footer">
+        {{ footer }}
+      </div>
+    {% endif %}
+  </div>
+  ```
+
+  Cotton will pass the `<c-slot name="footer">` content into the component’s context as the `footer` variable ([django-cotton/README.md at main · wrabit/django-cotton · GitHub](https://github.com/wrabit/django-cotton/blob/main/README.md#:~:text=Named%20slots)) ([django-cotton/README.md at main · wrabit/django-cotton · GitHub](https://github.com/wrabit/django-cotton/blob/main/README.md#:~:text=%3Cc)). In the template, we check `{% if footer %}` to only render the footer section if content was provided. Named slots can contain any HTML or even Django logic (loops, conditions) inside them when used, just like the default slot ([django-cotton/README.md at main · wrabit/django-cotton · GitHub](https://github.com/wrabit/django-cotton/blob/main/README.md#:~:text=Named%20slots%20can%20also%20contain,html%20or%20django%20template%20expression)). Use named slots to make components flexible for optional sections (headers, footers, icons, etc.) or to allow injecting multiple pieces of content into different places in a component.
+
+- **Including Components within Components:** Cotton components can be nested. You can use one component inside another’s template just by using its `<c-name>` tag as you would in any template. This is similar to "include", but with Cotton’s advantages. For example, you might have a `c-card` component that internally uses a `c-button` component for an action link:
+
+  ```django
+  <!-- File: cotton/card.html -->
+  <div class="card">
+    <h3>{{ title }}</h3>
+    <p>{{ slot }}</p>
+    {% if button_text %}
+      <c-button url="{{ button_url }}">{{ button_text }}</c-button>
+    {% endif %}
+  </div>
+  ```
+
+  In this snippet, the `card` component includes a `c-button` component if `button_text` is provided. When a template uses `<c-card title="Hello" button_text="Read more" button_url="/readmore">Content here</c-card>`, the `card` component will render its HTML and, since `button_text` is set, it will also render the `c-button` component inside the card. This demonstrates that components can be composed together naturally. Use this capability to build higher-level components from smaller ones (e.g., a complex form component that uses smaller field components internally).
+
+- **Dynamic Component Includes:** Sometimes you need to decide which component to render at runtime (for example, choosing a specific input component based on a field type). Cotton provides a special generic tag `<c-component>` for this. The `<c-component>` tag accepts an `is` attribute (or `:is` for dynamic values) that specifies the component name or path to render. For example:
+
+  ```django
+  {% comment %} Render a field with a dynamic component based on its type {% endcomment %}
+  <c-component :is="field.component_name" :field="field" />
+  ```
+
+  Here, if `field.component_name` is `"text-input"`, this will effectively include `<c-text-input :field="field" />`. You can also provide a literal string to `is`, including nested paths. For instance: `<c-component is="form_fields.email" :field="field_email" />` would load the component from `templates/cotton/form_fields/email.html` ([django-cotton/README.md at main · wrabit/django-cotton · GitHub](https://github.com/wrabit/django-cotton/blob/main/README.md#:~:text=%3C%21,)). Dynamic includes are helpful for factory-style rendering or when looping through items that each require a different component. They keep your templates clean by avoiding large if-elif blocks to choose components. When using `c-component`, ensure the string you pass matches a valid component file; you can even build it with template expressions as shown (Cotton will resolve the final string to a component path).
+
+- **Include vs. Extends:** In traditional Django templates, `{% include %}` is used to insert one template into another, but it has limitations (especially with injecting complex content). Cotton’s components and slots largely eliminate the need for `{% include %}` tags for UI composition ([django-cotton/README.md at main · wrabit/django-cotton · GitHub](https://github.com/wrabit/django-cotton/blob/main/README.md#:~:text=match%20at%20L584%20attributes%2C%20passing,boolean%20attributes%2C%20named%20slots%20etc)). Instead of including a template and trying to pass data to it, define a component and use it via its tag, which naturally supports passing variables and blocks of HTML (slots). You can still use `{% include %}` for very static snippets if needed, but generally prefer using components for anything dynamic or reusable. Template inheritance (`{% extends %}` with blocks) is still useful for high-level page layouts, but even layouts can be made as components (see next section). The guiding idea is to use the right tool: **extends** for base layout skeleton, **components (include via tags)** for reusable pieces within, and avoid using raw includes for things that would be better as components with inputs/slots.
+
+## HTMX Integration Guidelines
+
+[HTMX](https://htmx.org/) allows you to add AJAX-like behavior (partial page updates, RESTful interactions) using HTML attributes. Django-Cotton components work very well with HTMX, since you can treat HTMX attributes just like any other attribute on a component or an HTML element. Here are some best practices for integrating HTMX in Cotton templates:
+
+- **Passing HTMX Attributes to Components:** You can add any `hx-*` attributes to a Cotton component usage, and they will be passed into the component’s `attrs` (unless the component explicitly handles them). For example, imagine a Cotton component for a form defined in `cotton/form.html` that includes `{{ attrs }}` in the `<form>` tag. If you use it as:
+
+  ```django
+  <c-form hx-post="/submit/data" hx-target="#result" hx-swap="outerHTML">
+    ... form fields ...
+  </c-form>
+  ```
+
+  The component’s rendered `<form>` element will include `hx-post="/submit/data" hx-target="#result" hx-swap="outerHTML"` along with any other attributes defined in `attrs` ([django-cotton/README.md at main · wrabit/django-cotton · GitHub](https://github.com/wrabit/django-cotton/blob/main/README.md#:~:text=%3C%21,div)) ([django-cotton/README.md at main · wrabit/django-cotton · GitHub](https://github.com/wrabit/django-cotton/blob/main/README.md#:~:text=%3C%2Fc)). This means you can quickly equip any form or interactive component with HTMX behavior without altering the component’s code – just by adding attributes when you use it.
+
+- **Designing Components for Partial Updates:** When creating components that will be updated via HTMX (for instance, a list component that can refresh its items, or a form that shows validation messages after submission), structure them to cleanly replace or update a specific DOM element. Often this means wrapping the component output in a container `div` or similar with an `id` that you can target with `hx-target`. In an example from Cotton’s docs, a contact form component might output a result message `<div id="result">...</div>` and include `hx-target="#result"` on the form, so that only that part updates on submit ([django-cotton/README.md at main · wrabit/django-cotton · GitHub](https://github.com/wrabit/django-cotton/blob/main/README.md#:~:text=)). When building such a component:
+  - Include a distinct container or identify what part of the component should be replaced.
+  - In the view handling the HTMX request, return a fragment of HTML that corresponds to what needs updating (you can even render the same component or a sub-component for the response). By reusing components for the response, you ensure consistency.
+
+- **Use HTMX for Progressive Enhancement:** It’s a good practice to make your components function without HTMX (basic form submission or page reload) and then enhance them with HTMX for better UX. Cotton encourages this by keeping markup semantic. For example, a `<c-table>` component could be used normally (rendering a full table). Later, you could add `hx-get` attributes to its headers for sorting, but even without those, the table works. So, add HTMX attributes to your component usage to progressively enhance. Keep server responses minimal (just the needed HTML fragment) and lean on Cotton to reconstruct components on the fly.
+
+- **Handling Events and Triggering:** If your use-case involves triggering events (like refreshing multiple components or coordinating interactions), HTMX provides **client-side events** (e.g., `htmx:afterSwap`) and an extension for server-sent events or triggering events. While not directly a Cotton feature, you can incorporate these by adding `hx-trigger` or `hx-trigger="sse:eventName"` attributes on components/elements. Cotton will pass them through via `attrs`. For instance, if you have `<c-notifications hx-trigger="sse:newMessage">...</c-notifications>`, the component’s root element might get that attribute and listen for server-sent "newMessage" events to update itself. Ensure your component is structured to handle being reloaded or updated in response to such triggers (id or target selectors set correctly).
+
+- **Keep JavaScript Minimal:** One of the advantages of using HTMX (and Alpine.js) is to avoid writing large JS code. Let HTMX handle the AJAX and partial page updates by simply setting attributes. In combination with Cotton, you might create small components that represent those partial pieces (like a `c-comment-list` component that HTMX can swap out). Maintain a clear contract: HTMX calls a URL, server returns HTML (likely rendered via a Cotton component/template), and HTMX swaps it in. There’s no need for manual DOM manipulation code. Just ensure to include the HTMX library (usually via a `<script src="...htmx.min.js"></script>`) in your base template.
+
+## Alpine.js Integration Guidelines
+
+[Alpine.js](https://alpinejs.dev/) is a lightweight JavaScript framework for adding interactivity directly in HTML via attributes (e.g., `x-data`, `x-show`, `@click`). Django-Cotton components can integrate Alpine.js effortlessly, since Alpine directives can be written as normal HTML attributes. Keep these guidelines in mind when combining Alpine with Cotton:
+
+- **Including Alpine.js:** Make sure to include the Alpine.js script in your base template (or anywhere before your components are used). This might look like `<script src="//unpkg.com/alpinejs" defer></script>` in your `<head>` or at the end of `<body>`. Without this, the `x-` attributes in your components will do nothing. If you’re using Alpine’s plugin (like Alpine Turbo or Persist), include them as well.
+
+- **Using Alpine Directives in Components:** You can add any `x-` directive or `@event` (shorthand for `x-on:event`) inside your component templates. Treat them as part of the HTML. For example, you might have a dropdown component:
+
+  ```django
+  <!-- File: cotton/dropdown.html -->
+  <div x-data="{ open: false }" class="dropdown" {{ attrs }}>
+    <button @click="open = !open" class="dropbtn">{{ label }}</button>
+    <div x-show="open" class="dropdown-menu">
+      {{ slot }}
+    </div>
+  </div>
+  ```
+
+  This component uses Alpine: it sets up a local state (`open`) with `x-data`, toggles it on button click, and uses `x-show` to show/hide the menu. When you use `<c-dropdown label="Menu"> ...items... </c-dropdown>`, the output includes those `x-` attributes, and Alpine will make it interactive. Notice we included `{{ attrs }}` in the wrapper, so that any extra attributes (like `id` or additional Alpine properties passed from usage) get applied. For instance, you could do `<c-dropdown label="Menu" x-bind:class="{ 'expanded': open }">...</c-dropdown>` to bind a class via Alpine; this `x-bind:class` would flow into `attrs` and thus onto the `<div>`.
+
+- **Isolating Alpine State:** Each component with `x-data` has its own state. This is usually good for encapsulation. If you have multiple Cotton components on a page each with Alpine, they operate independently unless you deliberately connect them (via Alpine’s `$dispatch` events or shared scope). Keep the state management inside the component for that component’s UI. For example, a `c-tabs` component can use Alpine to manage which tab is active. Cotton’s documentation shows an approach where a parent `c-tabs` component held the Alpine state and child `c-tab` components accessed it ([Alpine Js - Django Cotton](https://django-cotton.com/docs/alpine-js#:~:text=%3Cc,tabs)) ([Alpine Js - Django Cotton](https://django-cotton.com/docs/alpine-js#:~:text=register%28name%29%20,script)). This was done by having the parent element with `x-data` define methods like `isCurrent(tabName)` and `register(tabName)`, and children calling those via `x-show="isCurrent('{{ name }}')"` or `x-init="register('{{ name }}')"` ([Alpine Js - Django Cotton](https://django-cotton.com/docs/alpine-js#:~:text=%3Cdiv%20%40click%3D%22currentTab%20%3D%20tab%22%20x,%3C%2Ftemplate%3E%20%3C%2Fdiv)). When structuring such interactive components:
+  - Define `x-data` at the highest necessary level (often the top element of your component or a wrapper around multiple subcomponents).
+  - Use Alpine’s capabilities (methods, computed properties) to manage complex behavior, rather than trying to manipulate DOM directly.
+  - You can pass Django data into Alpine by outputting it in the `x-data` or other attributes. For example, `<div x-data="{ count: {{ initial_count }} }">` will initialize Alpine state from a Django context variable.
+
+- **Alpine with HTMX Updates:** If you use Alpine and HTMX together, be aware that HTMX replacing part of the DOM will also re-initialize Alpine for that portion. Alpine v3+ should auto-init any new elements inserted. If you find Alpine state resetting due to HTMX content swap, you might consider Alpine’s persist plugin or design your HTMX calls such that they don’t fully replace the parts with critical state. Also, if an Alpine component needs to know when it’s loaded after an HTMX swap, you can listen for HTMX events (like `htmx:afterSwap`) in Alpine (`x-on:htmx:afterSwap.window="..."`).
+
+- **Keep JavaScript Lightweight:** Aim to implement only purely presentational or minor interactive logic with Alpine. Complex state or logic might indicate you need a more robust approach or to move logic to Python side. Alpine is perfect for UI state toggling, form input show/hide, small widgets, etc., within Cotton components. This keeps your Django app mostly Python and HTML, with Alpine providing the sprinkles of interactivity.
+
+## Naming Conventions
+
+Following consistent naming conventions for components, slots, and other identifiers will make your templates easier to maintain and help others (or AI assistants) use components correctly:
+
+- **Component File Names:** Use lowercase **snake_case** for component template file names (and directories). For example: `user_card.html`, `comment_form.html`, `navbar.html`. If organizing in subfolders, those are also snake_case (e.g., `forms/contact_form.html`). This convention aligns with Django template naming and is easy to read.
+
+- **Component Tag Names:** When using a component in a template, the tag name is the same as the file name but in **kebab-case** (dashes instead of underscores) and prefixed with `c-`. For instance, `user_card.html` is used as `<c-user-card>` ([django-cotton/README.md at main · wrabit/django-cotton · GitHub](https://github.com/wrabit/django-cotton/blob/main/README.md#:~:text=,component)), `comment_form.html` as `<c-comment-form>`, and `navbar.html` as `<c-navbar>`. Keep tag names descriptive of the component’s purpose.
+
+- **Named Slots:** Slot names should be lowercase and descriptive of their content or purpose. For example, use names like `header`, `footer`, `icon`, `empty_state`. Avoid using Python reserved words or special characters in slot names (stick to alphanumeric and underscores or hyphens). In component usage, you’ll refer to them in `<c-slot name="...">`, and inside the component template they appear as context variables of the same name. Consistency is key: the slot name in usage must exactly match the variable you use in the component to display it.
+
+- **Attribute Names:** When defining attributes (props) for components, choose names that make sense in the context of usage. Typically use lowercase (and underscores if needed) since they become Django context variables. For example, `:user="user_obj"`, `title="Delete Item"`, `show_details`, `max_items`. If an attribute represents a boolean flag, naming it in a positive tone is helpful (e.g., `disabled` for a button that could be true/false). For attributes that correspond to standard HTML attributes (like `id`, `class`, `href`), you don’t need to define them explicitly in the component; just use `{{ attrs }}` to capture them. But it’s fine to pass them in usage as needed. Avoid using `c-` prefix in any attribute names or slot names to prevent confusion with component tags.
+
+- **JavaScript-related Names:** If passing data to Alpine or using as HTMX targets, ensure your IDs or data attribute values are unique or context-appropriate (just as you normally would). For example, if a component creates an element with `id="result"` for HTMX targeting, ensure only one such ID on a page or scope it appropriately (maybe by passing in an id). You might allow an `id` to be passed as an attribute to your component for flexibility.
+
+- **Signal Naming (Events):** In cases where you utilize custom events or signals (e.g., Alpine’s `$dispatch` or HTMX `trigger` events), use clear names that won’t collide with built-in events. Prefix them with context if needed (e.g., `modal:closed`, `menu:opened`). While not a part of Cotton’s syntax, these “signals” help components communicate. Naming them clearly in your templates and scripts will avoid confusion.
+
+- **Django Template Blocks and Includes:** If you mix Cotton with traditional template blocks, name your blocks clearly (e.g., `content`, `sidebar_content`). Keep block names distinct from component names to avoid any mental mix-up. For template includes (if any), use them for static pieces and name the files clearly as well (though, as noted, converting them to components is often better).
+
+## Example Structures
+
+To illustrate how Django-Cotton fits into a Django project, let’s consider an example project structure and template usage. We’ll build a simple blog page using Cotton components, combining both template inheritance and components:
+
+**Project Template Structure:**
+
+```
+myproject/
+ └─ templates/
+     ├─ base.html                -- Base template for the site
+     ├─ cotton/
+     │    ├─ navbar.html         -- <c-navbar> component
+     │    ├─ footer.html         -- <c-footer> component
+     │    ├─ post_card.html      -- <c-post-card> component for blog post preview
+     │    └─ ... other components ...
+     └─ blog/
+          └─ posts_list.html     -- A page that lists blog posts
+```
+
+**Base Template (base.html):** This is a traditional Django base template using `{% extends %}` conventions, but it also uses Cotton components for common sections:
+
+```django
+<!-- File: base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}My Site{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <script src="//unpkg.com/alpinejs" defer></script>
+  <script src="//unpkg.com/htmx.org@1.8.4" defer></script>
+</head>
+<body>
+  <c-navbar/>  {# Cotton component for navigation bar #}
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+  <c-footer/>  {# Cotton component for footer #}
+</body>
+</html>
+```
+
+In this base template, we include the Alpine.js and HTMX scripts (so their directives can be used in any page). We then place `<c-navbar/>` and `<c-footer/>` which will render the shared header and footer components. The `{% block content %}` is where page-specific content goes.
+
+**Navbar Component (cotton/navbar.html):**
+
+```django
+<nav class="navbar">
+  <!-- Example simple navbar component -->
+  <a href="{% url 'home' %}" class="brand">My Site</a>
+  {% if user.is_authenticated %}
+    <a href="{% url 'profile' %}">{{ user.username }}</a>
+    <a href="{% url 'logout' %}">Logout</a>
+  {% else %}
+    <a href="{% url 'login' %}">Login</a>
+  {% endif %}
+</nav>
+```
+
+*(This component doesn’t take any attributes or slots in this example; it uses the global `user` from context. We could enhance it to take menu items as a slot or attributes if needed.)*
+
+**Footer Component (cotton/footer.html):**
+
+```django
+<footer class="footer">
+  <p>&copy; 2025 My Site.</p>
+</footer>
+```
+
+*(A simple static footer component.)*
+
+**Post Card Component (cotton/post_card.html):**
+
+```django
+<article class="post-card">
+  <h2><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h2>
+  <p>{{ post.summary }}</p>
+  {% if show_author %}
+    <p class="author">By {{ post.author.name }}</p>
+  {% endif %}
+  <c-button href="{{ post.get_absolute_url }}">Read more</c-button>
+</article>
+```
+
+Here, `<c-post-card>` expects a `post` object to be passed (using the `:post="post_obj"` syntax in usage), and an optional boolean `show_author`. It also uses a `<c-button>` component (assuming we have a generic button component defined that handles an `href` attribute and default slot for the label). If `show_author` is True, it displays the author. This component demonstrates using a context object (`post`), a conditional section, and including another component (`c-button`). Notice we didn’t explicitly handle unknown attributes, but we could add `{{ attrs }}` in the `<article>` tag if we wanted to allow extra attributes.
+
+**Blog Posts List Page (blog/posts_list.html):**
+
+```django
+{% extends "base.html" %}
+{% block title %}Posts - My Site{% endblock %}
+{% block content %}
+  <h1>Recent Posts</h1>
+  <div class="posts-list">
+    {% for post in posts %}
+      <c-post-card :post="post" show_author="True" />
+    {% empty %}
+      <p>No posts yet.</p>
+    {% endfor %}
+  </div>
+{% endblock %}
+```
+
+This page extends the base template. In the content block, it iterates over a list of `posts` (provided by the Django view). For each post, it uses our `<c-post-card>` component, passing the `post` object and setting `show_author="True"` (as a string here, which the component will interpret as truthy, or we could use `:show_author="True"` to explicitly pass a boolean). If there are no posts, it shows a message. The `c-post-card` component renders each post preview consistently.
+
+**How this works together:** The base template gives the overall structure and includes navbar and footer components. The page template fills in the main content by extending base. Inside that content, Cotton components are used to generate structured HTML for each post. Each component is isolated: for example, you could modify `post_card.html` to change how posts look, and all pages using it would update. If you wanted to add a new attribute (say, a flag for highlighting a post), you could adjust the component and use it easily. This structure keeps templates organized and encourages reuse.
+
+You could also choose to create the layout as a Cotton component (e.g., `cotton/layout_main.html` combining navbar, content slot, footer), then your page would simply do `<c-layout-main>...content...</c-layout-main>` without extends. That approach can work well if you prefer composition over inheritance. In either case, Cotton is flexible to accommodate both patterns.
+
+## Dos and Don'ts
+
+- **Do:** Design components to be **reusable** and **self-contained**. A component should have a clear purpose and not rely on external state (beyond what is passed in). This makes it easy to drop it into any page or another component.
+
+- **Do:** Use **slots** (default or named) to allow customization of component content. This avoids creating multiple similar components for minor content changes. For example, one modal component with slots can handle many variations, instead of many slightly different modal templates.
+
+- **Do:** Pass data into components via **attributes** (context) rather than querying inside the component. Compute any complex data or decisions in the Django view, and then pass the results to the template. Keep component logic simple (mostly if/for and displaying variables).
+
+- **Do:** Utilize the `{{ attrs }}` feature to make components flexible. If your component wraps an HTML element, include `attrs` so that things like classes, IDs, `hx-` or `x-` attributes can be added when needed without changing the component code.
+
+- **Do:** Combine **HTMX** and **Alpine.js** with Cotton to enhance UX. Use HTMX for server interactions (like loading more content, submitting forms in background) and Alpine.js for client-side interactions (toggling UI state, small widgets). They solve different problems and together cover a wide range of needs without a full SPA framework.
+
+- **Do:** Follow Django best practices. Keep templates readable, escape content properly (by default Django does this; avoid disabling autoescape unless necessary), and use Django template filters/tags for typical tasks (date formatting, truncation, etc.) within components as you would in any template.
+
+- **Don't:** Put heavy business logic or database calls in templates or components. Cotton doesn’t change the fact that Django templates are not meant for complex logic. For example, don’t attempt to filter QuerySets or call model methods that hit the database in a component template. Do that in the view or model, and pass the final data to the component.
+
+- **Don't:** Overuse global context variables inside components. It can be tempting to rely on something like the `request` or `user` being available everywhere. While Django’s context processors can make certain variables globally accessible, for clarity and reuse it’s better to pass needed data explicitly to components. This makes the component more portable and transparent.
+
+- **Don't:** Create very large components that do too much. If a component template grows very big or handles many concerns, consider splitting it into smaller components. For instance, if you have a dashboard component that includes various panels, perhaps each panel should be its own component included in the dashboard template. This modular approach prevents one component from becoming unmanageable.
+
+- **Don't:** Forget to include required scripts or styles for your components. Cotton itself doesn’t add any CSS or JS, so if your components rely on Alpine.js (include Alpine) or if you use a CSS framework like Tailwind or Bootstrap, ensure those are loaded. An AI assistant following this guide should remember to include `<script>` tags or `{% load static %}` references for CSS/JS as needed in base templates.
+
+- **Don't:** Misuse slots or attributes. For example, don’t pass large HTML chunks as a single string attribute (instead, use a slot so it’s not escaped and is clearer). Don’t use a named slot for something that should be a boolean flag (use an attribute for flags). In short, use each feature for what it’s best at: slots for HTML/content blocks, attributes for small data items or flags.
+
+- **Don't:** Use the `c-` prefix for anything other than Cotton components. That prefix is reserved so the template engine can identify components. Don’t create actual HTML tags or CSS classes starting with `c-` expecting them to be treated as components. Similarly, avoid naming a component in a way that conflicts with a real HTML tag (like `<c-select>` is fine, but do not create `<c-div>` component). Keep names semantically meaningful.
+
+By adhering to these guidelines, you will create Django templates that are clean, maintainable, and harness the full power of Django-Cotton for UI components. Whether by hand or with the assistance of an AI, following these rules ensures consistency and reduces common errors when using Cotton, Alpine.js, and HTMX together in a Django project.

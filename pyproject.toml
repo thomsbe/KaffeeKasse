@@ -12,6 +12,7 @@ dependencies = [
     "django-htmx>=1.23.0",
     "whitenoise>=6.9.0",
     "gunicorn>=23.0.0",
+    "django-cotton>=2.0.3",
 ]
 
 [dependency-groups]

@@ -8,7 +8,12 @@
       <h2 class="card-title mb-4">{% trans "Login" %}</h2>
       <form method="post" action="{% url 'account_login' %}">
         {% csrf_token %}
-        {{ form.non_field_errors }}
+        {% if redirect_field_value %}
+          <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+        {% endif %}
+        {% if form.non_field_errors %}
+          <div class="alert alert-error mb-4">{{ form.non_field_errors }}</div>
+        {% endif %}
         <div class="form-control mb-4">
           {{ form.login.label_tag }}
           {{ form.login }}
@@ -17,7 +22,7 @@
           {{ form.password.label_tag }}
           {{ form.password }}
         </div>
-        <button class="btn btn-primary w-full mt-2" type="submit">{% trans "Login" %}</button>
+        <c-button type="submit" variant="primary" extra_classes="w-full mt-2">{% trans "Login" %}</c-button>
       </form>
       <div class="mt-4 text-center">
         <a href="{% url 'account_reset_password' %}" class="link">{% trans "Forgot Password?" %}</a>
